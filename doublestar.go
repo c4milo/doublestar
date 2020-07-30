@@ -2,6 +2,7 @@ package doublestar
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -13,21 +14,27 @@ import (
 // An OS abstracts functions in the standard library's os package.
 type OS interface {
 	Lstat(name string) (os.FileInfo, error)
-	Open(name string) (*os.File, error)
+	Open(name string) (File, error)
 	PathSeparator() rune
 	Stat(name string) (os.FileInfo, error)
 }
 
-// StandardOS is a value that implements the OS interface by calling functions
-// in the standard libray's os package.
-var StandardOS OS = standardOS{}
+// File defines a subset of file operations
+type File interface {
+	io.Closer
+	Readdir(count int) ([]os.FileInfo, error)
+}
 
 // A standardOS implements OS by calling functions in the standard library's os
 // package.
 type standardOS struct{}
 
+// StandardOS is a value that implements the OS interface by calling functions
+// in the standard libray's os package.
+var StandardOS OS = standardOS{}
+
 func (standardOS) Lstat(name string) (os.FileInfo, error) { return os.Lstat(name) }
-func (standardOS) Open(name string) (*os.File, error)     { return os.Open(name) }
+func (standardOS) Open(name string) (File, error)         { return os.Open(name) }
 func (standardOS) PathSeparator() rune                    { return os.PathSeparator }
 func (standardOS) Stat(name string) (os.FileInfo, error)  { return os.Stat(name) }
 
